@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Sah Ghor — Shift Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --cream: #fdf6ec;
+    --cream-dark: #f5ead6;
+    --brown: #3b2410;
+    --brown-mid: #6b3f1f;
+    --brown-light: #a0622a;
+    --amber: #c8821a;
+    --amber-light: #e8b96a;
+    --text: #2a1a08;
+    --text-muted: #7a5c3a;
+    --border: #ddc89a;
+    --success: #3a7a3a;
+    --success-bg: #edf7ed;
+    --danger: #a02020;
+    --danger-bg: #fdf0f0;
+    --white: #ffffff;
+    --shadow: 0 2px 12px rgba(59,36,16,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--cream);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ── LOGIN ── */
+  #screen-login {
+    align-items: center;
+    justify-content: center;
+    background: var(--cream);
+    padding: 2rem 1.5rem;
+  }
+
+  .login-wrap {
+    width: 100%;
+    max-width: 360px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .login-logo {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .login-logo .cup {
+    font-size: 52px;
+    display: block;
+    margin-bottom: 8px;
+    animation: steam 3s ease-in-out infinite;
+  }
+
+  @keyframes steam {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .login-logo h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--brown);
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+
+  .login-logo .tagline {
+    font-size: 12px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  .login-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+
+  .login-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--brown-mid);
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  input[type="text"], input[type="number"], select {
+    width: 100%;
+    height: 44px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: auto;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(200,130,26,0.15);
+    background: var(--white);
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    height: 48px;
+    border-radius: 12px;
+    border: none;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.15s;
+  }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary {
+    background: var(--brown);
+    color: var(--cream);
+  }
+  .btn-primary:hover { opacity: 0.9; }
+
+  .btn-secondary {
+    background: var(--cream-dark);
+    color: var(--brown-mid);
+    border: 1.5px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--border); }
+
+  .btn-amber {
+    background: var(--amber);
+    color: var(--white);
+  }
+  .btn-amber:hover { opacity: 0.9; }
+
+  .btn-danger {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1.5px solid #f5c0c0;
+  }
+
+  .btn-sm {
+    height: 32px;
+    font-size: 12px;
+    border-radius: 8px;
+    padding: 0 12px;
+    width: auto;
+  }
+
+  /* ── SHIFT HEADER ── */
+  .shift-header {
+    background: var(--brown);
+    color: var(--cream);
+    padding: 1.25rem 1.5rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .shift-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .shift-header-cafe {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 1;
+  }
+
+  .shift-header-name {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--amber-light);
+    margin-top: 4px;
+  }
+
+  .shift-header-date {
+    font-size: 12px;
+    color: rgba(253,246,236,0.6);
+    text-align: right;
+  }
+
+  .shift-total-pill {
+    background: var(--amber);
+    color: var(--white);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 4px;
+    display: inline-block;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .shift-body {
+    flex: 1;
+    padding: 1.25rem;
+    overflow-y: auto;
+  }
+
+  /* ── ADD SALE CARD ── */
+  .card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+
+  .card-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .sale-row {
+    display: grid;
+    grid-template-columns: 1fr 64px 80px;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .field-inline label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .toast {
+    background: var(--success-bg);
+    color: var(--success);
+    border: 1px solid #b8e0b8;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    display: none;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .add-item-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+    display: none;
+  }
+
+  /* ── SALES LIST ── */
+  .sell-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--cream);
+    border: 1px solid var(--cream-dark);
+    margin-bottom: 6px;
+    animation: fadeUp 0.25s ease both;
+  }
+
+  .sell-entry-left { flex: 1; min-width: 0; }
+  .sell-name { font-weight: 500; font-size: 14px; color: var(--text); }
+  .sell-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .sell-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .sell-amount { font-size: 15px; font-weight: 500; color: var(--brown-mid); }
+
+  .sell-actions { display: flex; gap: 4px; }
+
+  .icon-btn {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    transition: background 0.15s;
+  }
+  .icon-btn:hover { background: var(--cream-dark); }
+  .icon-btn.del:hover { background: var(--danger-bg); border-color: #f5c0c0; }
+
+  .no-sales {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 20px 0;
+  }
+
+  .more-note {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 6px 0;
+    font-style: italic;
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    margin-top: 8px;
+    border-top: 2px solid var(--cream-dark);
+  }
+
+  .total-label-text {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .total-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--brown);
+  }
+
+  /* ── END SHIFT ── */
+  .end-btn-wrap {
+    padding: 0 1.25rem 1.5rem;
+  }
+
+  /* ── ENDED SCREEN ── */
+  #screen-ended {
+    background: var(--cream);
+  }
+
+  .ended-header {
+    background: var(--brown);
+    color: var(--cream);
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+  }
+
+  .ended-check {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--amber);
+    color: white;
+    font-size: 26px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+  }
+
+  .ended-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .ended-header p { font-size: 13px; color: var(--amber-light); }
+
+  .ended-body {
+    padding: 1.25rem;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .summary-text {
+    background: var(--white);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    color: var(--text);
+    margin-bottom: 14px;
+    max-height: 360px;
+    overflow-y: auto;
+  }
+
+  .share-actions { display: flex; flex-direction: column; gap: 10px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(42,26,8,0.55);
+    display: none; align-items: center; justify-content: center;
+    z-index: 100;
+    padding: 1.5rem;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal-box {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 340px;
+    box-shadow: 0 8px 32px rgba(42,26,8,0.25);
+    animation: fadeUp 0.25s ease;
+  }
+
+  .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--brown);
+    margin-bottom: 16px;
+  }
+
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+  .modal-actions .btn { flex: 1; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  optgroup { background: var(--cream); color: var(--text-muted); font-size: 11px; }
+  option { background: var(--white); color: var(--text); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN SCREEN ══════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-wrap">
+    <div class="login-logo">
+      <span class="cup">☕</span>
+      <h1>Sah Ghor</h1>
+      <div class="tagline">Shift Tracker</div>
+    </div>
+    <div class="login-card">
+      <h2>Start your shift</h2>
+      <div class="field">
+        <label>Staff Name</label>
+        <input type="text" id="login-name" placeholder="Enter your name" autocomplete="off" />
+      </div>
+      <div class="field" style="margin-bottom:20px;">
+        <label>Shift Date</label>
+        <input type="text" id="login-date" placeholder="e.g. 17 March 2025" />
+      </div>
+      <button class="btn btn-primary" onclick="startShift()">Begin Shift →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SHIFT SCREEN ══════════════ -->
+<div id="screen-shift" class="screen">
+  <div class="shift-header">
+    <div class="shift-header-top">
+      <div>
+        <div class="shift-header-cafe">☕ Sah Ghor</div>
+        <div class="shift-header-name" id="hdr-name"></div>
+      </div>
+      <div style="text-align:right;">
+        <div class="shift-header-date" id="hdr-date"></div>
+        <div class="shift-total-pill" id="hdr-total">₹0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="shift-body">
+    <!-- ADD SALE -->
+    <div class="card">
+      <div class="card-label">Add a Sale</div>
+      <div class="toast" id="toast">✓ Sale added!</div>
+      <div class="sale-row">
+        <div class="field-inline">
+          <label>Item</label>
+          <select id="item-select" onchange="onItemChange()"></select>
+        </div>
+        <div class="field-inline">
+          <label>Qty</label>
+          <input type="number" id="qty-input" min="1" value="1" />
+        </div>
+        <div class="field-inline">
+          <label>Price ₹</label>
+          <input type="number" id="price-input" min="0" placeholder="0" />
+        </div>
+      </div>
+      <button class="btn btn-amber" onclick="addSell()">+ Add Sale</button>
+      <div class="add-item-row" id="add-item-row">
+        <input type="text" id="new-item-input" placeholder="New item name..." style="flex:1;" />
+        <button class="btn btn-secondary btn-sm" onclick="saveNewItem()">Save</button>
+        <button class="btn btn-secondary btn-sm" onclick="cancelAddItem()" style="width:36px;padding:0;">✕</button>
+      </div>
+    </div>
+
+    <!-- RECENT SALES -->
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div class="card-label" style="margin:0;">Recent Sales</div>
+        <div style="font-size:12px; color:var(--text-muted);" id="sell-count"></div>
+      </div>
+      <div id="sells-list"></div>
+      <div class="total-row">
+        <div class="total-label-text">Shift Total</div>
+        <div class="total-amount" id="total-display">₹0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="end-btn-wrap">
+    <button class="btn btn-danger" onclick="confirmEndShift()">End Shift</button>
+  </div>
+</div>
+
+<!-- ══════════════ ENDED SCREEN ══════════════ -->
+<div id="screen-ended" class="screen">
+  <div class="ended-header">
+    <div class="ended-check">✓</div>
+    <h2 id="ended-title"></h2>
+    <p id="ended-sub"></p>
+  </div>
+  <div class="ended-body">
+    <div class="card-label" style="margin-bottom:8px;">Shift Summary</div>
+    <div class="summary-text" id="share-text"></div>
+    <div class="share-actions">
+      <button class="btn btn-amber" onclick="shareWhatsApp()">Share on WhatsApp</button>
+      <button class="btn btn-secondary" onclick="copyText()">Copy to Clipboard</button>
+      <button class="btn btn-secondary" onclick="newShift()">Start New Shift</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ EDIT MODAL ══════════════ -->
+<div id="edit-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title">Edit Sale</div>
+    <div class="field">
+      <label>Item</label>
+      <select id="edit-item"></select>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div class="field">
+        <label>Qty</label>
+        <input type="number" id="edit-qty" min="1" />
+      </div>
+      <div class="field">
+        <label>Price ₹</label>
+        <input type="number" id="edit-price" min="0" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveEdit()">Save</button>
+      <button class="btn btn-secondary" onclick="closeEdit()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const DEFAULT_ITEMS = [
+  "Red Tea","Milk Tea","Special Milk","Lemon Tea","Coffee","Samosa","Patties"
+];
+
+const ITEMS_KEY  = "sahghor_items_v1";
+const RECENT_KEY = "sahghor_recent_v1";
+
+let sells      = [];
+let items      = [];
+let recentItems = [];
+let shiftName  = "";
+let shiftDate  = "";
+let editIndex  = -1;
+
+// ── STORAGE ──
+async function loadStorage() {
+  try {
+    const r = await window.storage.get(ITEMS_KEY);
+    if (r && r.value) {
+      const custom = JSON.parse(r.value);
+      items = [...new Set([...DEFAULT_ITEMS, ...custom])];
+    } else { items = [...DEFAULT_ITEMS]; }
+  } catch(e) { items = [...DEFAULT_ITEMS]; }
+
+  try {
+    const r2 = await window.storage.get(RECENT_KEY);
+    if (r2 && r2.value) recentItems = JSON.parse(r2.value);
+  } catch(e) { recentItems = []; }
+
+  buildDropdown("item-select", true);
+}
+
+async function saveItems() {
+  const custom = items.filter(i => !DEFAULT_ITEMS.includes(i));
+  try { await window.storage.set(ITEMS_KEY, JSON.stringify(custom)); } catch(e) {}
+}
+
+async function saveRecent() {
+  try { await window.storage.set(RECENT_KEY, JSON.stringify(recentItems)); } catch(e) {}
+}
+
+function bumpRecent(name) {
+  recentItems = [name, ...recentItems.filter(i => i !== name)].slice(0, 5);
+  saveRecent();
+}
+
+// ── DROPDOWN ──
+function buildDropdown(selId, withAdd) {
+  const sel = document.getElementById(selId);
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = "";
+
+  const ph = new Option("— Select item —", "");
+  sel.appendChild(ph);
+
+  const top5 = recentItems.filter(i => items.includes(i)).slice(0, 5);
+  const allAZ = [...items].sort((a, b) => a.localeCompare(b));
+
+  if (top5.length > 0) {
+    const g = document.createElement("optgroup");
+    g.label = "⭐ Recently Used";
+    top5.forEach(n => g.appendChild(new Option(n, n)));
+    sel.appendChild(g);
+  }
+
+  const g2 = document.createElement("optgroup");
+  g2.label = "All Items (A – Z)";
+  allAZ.forEach(n => g2.appendChild(new Option(n, n)));  // all items, not filtered
+  sel.appendChild(g2);
+
+  if (withAdd) sel.appendChild(new Option("＋ Add New Item...", "__add__"));
+  if (prev) sel.value = prev;
+}
+
+function onItemChange() {
+  if (document.getElementById("item-select").value === "__add__") {
+    document.getElementById("add-item-row").style.display = "flex";
+    document.getElementById("item-select").value = "";
+    document.getElementById("new-item-input").focus();
+  }
+}
+
+function saveNewItem() {
+  const name = document.getElementById("new-item-input").value.trim();
+  if (!name) return;
+  if (!items.includes(name)) { items.push(name); saveItems(); }
+  bumpRecent(name);
+  buildDropdown("item-select", true);
+  document.getElementById("item-select").value = name;
+  document.getElementById("new-item-input").value = "";
+  document.getElementById("add-item-row").style.display = "none";
+}
+
+function cancelAddItem() {
+  document.getElementById("new-item-input").value = "";
+  document.getElementById("add-item-row").style.display = "none";
+}
+
+// ── SHIFT START ──
+function startShift() {
+  const name = document.getElementById("login-name").value.trim();
+  const date = document.getElementById("login-date").value.trim();
+  if (!name) { alert("Please enter your name to begin."); return; }
+  shiftName = name;
+  shiftDate = date || new Date().toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'});
+  document.getElementById("hdr-name").textContent = name.toUpperCase() + "'S SHIFT";
+  document.getElementById("hdr-date").textContent = shiftDate;
+  showScreen("screen-shift");
+  renderSells();
+}
+
+// ── ADD SELL ──
+function addSell() {
+  const item  = document.getElementById("item-select").value;
+  const qty   = parseInt(document.getElementById("qty-input").value) || 1;
+  const price = parseFloat(document.getElementById("price-input").value);
+
+  if (!item || item === "__add__") { alert("Please select an item."); return; }
+  if (isNaN(price) || price < 0)  { alert("Please enter a valid price."); return; }
+
+  const now = new Date();
+  sells.push({
+    item, qty, price,
+    time: now.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12: true})
+  });
+
+  bumpRecent(item);
+  buildDropdown("item-select", true);
+  document.getElementById("item-select").value = "";
+  document.getElementById("qty-input").value   = "1";
+  document.getElementById("price-input").value = "";
+  renderSells();
+
+  const t = document.getElementById("toast");
+  t.style.display = "block";
+  setTimeout(() => t.style.display = "none", 1800);
+}
+
+// ── RENDER SELLS ──
+function renderSells() {
+  const list  = document.getElementById("sells-list");
+  const total = sells.reduce((s, x) => s + x.qty * x.price, 0);
+
+  document.getElementById("total-display").textContent = "₹" + total.toFixed(0);
+  document.getElementById("hdr-total").textContent     = "₹" + total.toFixed(0);
+  document.getElementById("sell-count").textContent    = sells.length + (sells.length === 1 ? " sale" : " sales");
+
+  if (sells.length === 0) {
+    list.innerHTML = '<div class="no-sales">No sales recorded yet</div>';
+    return;
+  }
+
+  const recent = sells.slice(-5).reverse();
+  list.innerHTML = recent.map((s, i) => {
+    const ri = sells.length - 1 - i;
+    return `<div class="sell-entry">
+      <div class="sell-entry-left">
+        <div class="sell-name">${s.item}</div>
+        <div class="sell-meta">Qty ${s.qty} &nbsp;·&nbsp; ₹${s.price} each &nbsp;·&nbsp; ${s.time}</div>
+      </div>
+      <div class="sell-right">
+        <div class="sell-amount">₹${(s.qty * s.price).toFixed(0)}</div>
+        <div class="sell-actions">
+          <button class="icon-btn" title="Edit" onclick="openEdit(${ri})">✏️</button>
+          <button class="icon-btn del" title="Delete" onclick="deleteSell(${ri})">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("") + (sells.length > 5 ? `<div class="more-note">+ ${sells.length - 5} earlier sale(s) not shown here</div>` : "");
+}
+
+function deleteSell(i) {
+  if (!confirm("Remove this sale?")) return;
+  sells.splice(i, 1);
+  renderSells();
+}
+
+// ── EDIT ──
+function openEdit(i) {
+  editIndex = i;
+  const s = sells[i];
+  buildDropdown("edit-item", false);
+  document.getElementById("edit-item").value  = s.item;
+  document.getElementById("edit-qty").value   = s.qty;
+  document.getElementById("edit-price").value = s.price;
+  document.getElementById("edit-modal").classList.add("open");
+}
+
+function saveEdit() {
+  const item  = document.getElementById("edit-item").value;
+  const qty   = parseInt(document.getElementById("edit-qty").value) || 1;
+  const price = parseFloat(document.getElementById("edit-price").value);
+  if (isNaN(price)) return;
+  sells[editIndex] = { ...sells[editIndex], item, qty, price };
+  closeEdit();
+  renderSells();
+}
+
+function closeEdit() {
+  document.getElementById("edit-modal").classList.remove("open");
+  editIndex = -1;
+}
+
+// ── END SHIFT ──
+function confirmEndShift() {
+  if (sells.length === 0) { alert("No sales recorded yet!"); return; }
+  if (!confirm("End this shift and generate the summary?")) return;
+  endShift();
+}
+
+function endShift() {
+  const total = sells.reduce((s, x) => s + x.qty * x.price, 0);
+  document.getElementById("ended-title").textContent = shiftName.toUpperCase() + "'S SHIFT";
+  document.getElementById("ended-sub").textContent   = shiftDate + "  ·  " + sells.length + " sales  ·  ₹" + total.toFixed(0);
+  document.getElementById("share-text").textContent  = buildSummary();
+  showScreen("screen-ended");
+}
+
+// ── SUMMARY TEXT ──
+function buildSummary() {
+  const total  = sells.reduce((s, x) => s + x.qty * x.price, 0);
+  const lines  = [];
+
+  lines.push("☕ SAH GHOR");
+  lines.push("━━━━━━━━━━━━━━━━━━━━━━━");
+  lines.push(shiftName.toUpperCase() + "'S SHIFT");
+  lines.push(shiftDate);
+  lines.push("━━━━━━━━━━━━━━━━━━━━━━━");
+  lines.push("");
+  lines.push("SALES LOG:");
+  lines.push("─────────────────────────");
+
+  sells.forEach((s, i) => {
+    lines.push(`${String(i+1).padStart(2,'0')}. [${s.time}] ${s.item}`);
+    lines.push(`    Qty: ${s.qty}  ×  ₹${s.price}  =  ₹${(s.qty * s.price).toFixed(0)}`);
+  });
+
+  lines.push("");
+  lines.push("─────────────────────────");
+  lines.push("SUMMARY:");
+  lines.push("─────────────────────────");
+
+  // grouped totals
+  const groups = {};
+  sells.forEach(s => {
+    if (!groups[s.item]) groups[s.item] = { qty: 0, total: 0 };
+    groups[s.item].qty   += s.qty;
+    groups[s.item].total += s.qty * s.price;
+  });
+
+  Object.entries(groups)
+    .sort((a,b) => b[1].total - a[1].total)
+    .forEach(([name, d]) => {
+      lines.push(`${name.padEnd(16)} x${d.qty}  →  ₹${d.total.toFixed(0)}`);
+    });
+
+  lines.push("");
+  lines.push("━━━━━━━━━━━━━━━━━━━━━━━");
+  lines.push(`TOTAL:  ₹${total.toFixed(0)}`);
+  lines.push("━━━━━━━━━━━━━━━━━━━━━━━");
+
+  return lines.join("\n");
+}
+
+function shareWhatsApp() {
+  const text = buildSummary();
+  if (navigator.share) {
+    navigator.share({ text }).catch(() => {});
+  } else {
+    window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+  }
+}
+
+function copyText() {
+  const text = buildSummary();
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => alert("Copied to clipboard!"));
+  } else {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    alert("Copied!");
+  }
+}
+
+function newShift() {
+  sells     = [];
+  shiftName = "";
+  shiftDate = "";
+  document.getElementById("login-name").value = "";
+  showScreen("screen-login");
+}
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+// ── INIT ──
+loadStorage();
+document.getElementById("login-date").value =
+  new Date().toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'});
+</script>
+</body>
+</html>
